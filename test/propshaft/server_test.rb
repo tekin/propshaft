@@ -53,6 +53,17 @@ class Propshaft::ServerTest < ActiveSupport::TestCase
     assert_equal 404, last_response.status
   end
 
+  test "disable caching" do
+    @server = Propshaft::Server.new(@assembly, no_cache: true)
+    asset = @assembly.load_path.find("foobar/source/test.css")
+    get "/#{asset.digested_path}"
+
+    assert_equal 200, last_response.status
+    assert_equal "no-cache, no-store, must-revalidate", last_response.headers['cache-control']
+    assert_equal "*", last_response.headers['vary']
+    refute last_response.headers.key?('etag')
+  end
+
   private
     def default_app
       builder = Rack::Builder.new

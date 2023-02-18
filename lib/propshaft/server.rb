@@ -1,8 +1,9 @@
 require "rack/utils"
 
 class Propshaft::Server
-  def initialize(assembly)
+  def initialize(assembly, no_cache: false)
     @assembly = assembly
+    @no_cache = no_cache
   end
 
   def call(env)
@@ -17,9 +18,10 @@ class Propshaft::Server
           "content-length"  => compiled_content.length.to_s,
           "content-type"    => asset.content_type.to_s,
           "accept-encoding" => "vary",
-          "etag"            => asset.digest,
-          "cache-control"   => "public, max-age=31536000, immutable"
-        },
+          "etag"            => @no_cache ? nil : asset.digest,
+          "cache-control"   => @no_cache ? "no-cache, no-store, must-revalidate" : "public, max-age=31536000, immutable",
+          "vary"            => @no_cache ? "*" : nil
+        }.compact,
         [ compiled_content ]
       ]
     else

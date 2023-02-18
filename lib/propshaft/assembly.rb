@@ -27,7 +27,7 @@ class Propshaft::Assembly
   end
 
   def server
-    Propshaft::Server.new(self)
+    Propshaft::Server.new(self, no_cache: config.no_cache)
   end
 
   def processor
@@ -46,7 +46,7 @@ class Propshaft::Assembly
 
   def reveal(path_type = :logical_path)
     path_type = path_type.presence_in(%i[ logical_path path ]) || raise(ArgumentError, "Unknown path_type: #{path_type}")
-    
+
     load_path.assets.collect do |asset|
       asset.send(path_type)
     end
